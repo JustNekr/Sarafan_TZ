@@ -18,9 +18,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
-from categories.views import ProductAPIView
+from categories.views import ProductAPIView, CategoryAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/productlist/', ProductAPIView.as_view()),
+    path('api/v1/categorytlist/', CategoryAPIView.as_view()),
 ]
