@@ -17,11 +17,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+from rest_framework import routers
+from categories.views import CategoryAPIView, BasketAPIViewSet, ProductAPIViewSet
 
-from categories.views import ProductAPIView, CategoryAPIView
+router = routers.SimpleRouter()
+router.register(r'basket', BasketAPIViewSet)
+router.register(r'product', ProductAPIViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/productlist/', ProductAPIView.as_view()),
+    # path('api/v1/productlist/', ProductAPIView.as_view()),
     path('api/v1/categorytlist/', CategoryAPIView.as_view()),
 ]
+urlpatterns += router.urls

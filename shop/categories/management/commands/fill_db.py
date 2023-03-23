@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.text import slugify
 
@@ -11,6 +12,14 @@ class Command(BaseCommand):
     #     parser.add_argument('poll_ids', nargs='+', type=int)
 
     def handle(self, *args, **options):
+        username = 'nekr'
+        password = '123'
+        if User.objects.filter(username=username).exists():
+            print('Superuser creation skipped.')
+        else:
+            User.objects.create_superuser(username=username, password=password)
+            print('Superuser created.')
+
         for cat_count in range(10):
             category, created = Category.objects.get_or_create(
                 name=f'Category_{cat_count}', slug=slugify(f'Category_{cat_count}')

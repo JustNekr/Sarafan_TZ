@@ -4,8 +4,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.urls import reverse
 from mptt.models import MPTTModel, TreeForeignKey
+from rest_framework.reverse import reverse_lazy, reverse
 
 
 class Category(MPTTModel):
@@ -47,6 +47,14 @@ class Product(models.Model):
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
 
+    def get_adding_url(self):
+        # return f"https://{Site.objects.get_current().domain}{reverse('basket-add', args=[str(self.slug)])}"
+        return reverse('basket-add', args=[str(self.slug)])
+
+    def get_absolute_url(self):
+        return reverse('product-detail', args=[str(self.slug)])
+
+
     # def clean(self):
     #     if self.sub_category.parent == None:
     #         raise ValidationError({'sub_category': 'Требуется подкатегория'})
@@ -55,7 +63,7 @@ class Product(models.Model):
 class Basket(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='basket')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(verbose_name='количество', default=0)
+    quantity = models.PositiveIntegerField(verbose_name='количество', default=1)
 
     @property
     def product_cost(self):
