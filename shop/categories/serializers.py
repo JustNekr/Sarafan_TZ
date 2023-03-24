@@ -20,8 +20,6 @@ class ProductSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(product_url)
 
 
-
-
 class CategorySerializer(serializers.ModelSerializer):
     sub_category = serializers.StringRelatedField(many=True)
 
@@ -41,4 +39,12 @@ class BasketSerializer(serializers.ModelSerializer):
         fields = ('product', 'quantity')
         depth = 1
         lookup_field = 'slug'
+        read_only_fields = ['product']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['product_cost'] = instance.product_cost
+
+        return representation
+
 
