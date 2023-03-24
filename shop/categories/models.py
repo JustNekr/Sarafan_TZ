@@ -65,6 +65,11 @@ class Basket(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='количество', default=1)
 
+    class Meta:
+        unique_together = [['user', 'product']]
+        verbose_name = 'Товар'
+        verbose_name_plural = 'Корзина'
+
     @property
     def product_cost(self):
         return self.product.price * self.quantity

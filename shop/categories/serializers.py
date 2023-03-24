@@ -39,5 +39,6 @@ class BasketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Basket
         fields = ('product', 'quantity')
-        depth = 0
+        depth = 1
+        lookup_field = 'slug'
 

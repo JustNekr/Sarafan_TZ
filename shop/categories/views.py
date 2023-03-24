@@ -36,6 +36,8 @@ class IsOwner(BasePermission):
 
 
 class BasketAPIViewSet(mixins.ListModelMixin,
+                       mixins.UpdateModelMixin,
+                       mixins.RetrieveModelMixin,
                        GenericViewSet):
     permission_classes = [IsAuthenticated & IsOwner]
     queryset = Basket.objects.all().select_related().annotate(price=F('product__price'))
@@ -62,5 +64,7 @@ class BasketAPIViewSet(mixins.ListModelMixin,
             item.save()
         return HttpResponseRedirect(redirect_to=request.build_absolute_uri(reverse('basket-list')))
 
-
+    def get_object(self):
+        obj = self.queryset.filter(product__slug=self.kwargs[self.lookup_field]).first()
+        return obj
 
