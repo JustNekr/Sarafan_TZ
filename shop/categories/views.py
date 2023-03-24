@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.viewsets import GenericViewSet
 from .models import Product, Category, Basket
@@ -30,7 +31,7 @@ class IsOwner(BasePermission):
         return obj.user == request.user
 
 
-class BasketAPIViewSet(mixins.ListModelMixin,
+class BasketAPIViewSet(
                        mixins.UpdateModelMixin,
                        mixins.RetrieveModelMixin,
                        mixins.DestroyModelMixin,
@@ -46,20 +47,22 @@ class BasketAPIViewSet(mixins.ListModelMixin,
         for the currently authenticated user.
         """
         user = self.request.user
-        return self.queryset.filter(user=user) #.aggregate(average_price=Avg('price'))
+        return self.queryset.filter(user=user)
 
     # @action(methods=['post'], detail=True, permission_classes=[IsAdminOrIsSelf],
     #         url_path='change-password', url_name='change_password')
     # def set_password(self, request, pk=None):
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated])
+    @action(methods=['get'], detail=True)
     def add(self, request, slug=None):
+        print()
         product = get_object_or_404(Product, slug=slug)
         item, created = Basket.objects.get_or_create(product=product, user=request.user)
         if not created:
             item.quantity += 1
             item.save()
-        if request.META['HTTP_REFERER']:
-            return HttpResponseRedirect(redirect_to=request.META['HTTP_REFERER'])
+        referer = request.META.get('HTTP_REFERER', '')
+        if referer:
+            return HttpResponseRedirect(redirect_to=referer)
         return HttpResponseRedirect(redirect_to=request.build_absolute_uri(reverse('basket-list')))
 
     def get_object(self):
@@ -69,3 +72,24 @@ class BasketAPIViewSet(mixins.ListModelMixin,
         self.check_object_permissions(self.request, obj)
         return obj
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        if serializer.data:
+            total_cost = queryset.first().total_cost
+            total_quantity = queryset.first().total_quantity
+            data = serializer.data
+            new_data = {'products_list': data,
+                        'total_coast': total_cost,
+                        'total_quantity': total_quantity}
+            return Response(new_data)
+        else:
+            return Response(serializer.data)
+
+    @action(methods=['get'], detail=False)
+    def delete_all(self, request):
+        Basket.objects.filter(user=request.user).delete()
+        referer = request.META.get('HTTP_REFERER', '')
+        if referer:
+            return HttpResponseRedirect(redirect_to=referer)
+        return HttpResponseRedirect(redirect_to=request.build_absolute_uri(reverse('basket-list')))

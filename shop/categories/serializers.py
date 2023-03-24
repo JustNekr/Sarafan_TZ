@@ -47,4 +47,5 @@ class BasketSerializer(serializers.ModelSerializer):
 
         return representation
 
+# class BasketListSerializer(serializers.BaseSerializer)
 
