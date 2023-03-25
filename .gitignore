@@ -4,3 +4,4 @@
 *.sqlite3
 /migrations/
 /shop/categories/migrations/
+/media/

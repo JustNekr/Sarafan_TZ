@@ -49,9 +49,6 @@ class BasketAPIViewSet(
         user = self.request.user
         return self.queryset.filter(user=user)
 
-    # @action(methods=['post'], detail=True, permission_classes=[IsAdminOrIsSelf],
-    #         url_path='change-password', url_name='change_password')
-    # def set_password(self, request, pk=None):
     @action(methods=['get'], detail=True)
     def add(self, request, slug=None):
         print()

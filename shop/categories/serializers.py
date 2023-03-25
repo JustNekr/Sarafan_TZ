@@ -20,12 +20,18 @@ class ProductSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(product_url)
 
 
+class SubCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('name', 'slug', 'image')
+
+
 class CategorySerializer(serializers.ModelSerializer):
-    sub_category = serializers.StringRelatedField(many=True)
+    sub_category = SubCategorySerializer(many=True)
 
     class Meta:
         model = Category
-        fields = ('name', 'slug', 'sub_category')
+        fields = ('name', 'slug', 'sub_category', 'image')
         # depth = 1
 
 

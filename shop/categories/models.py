@@ -11,9 +11,9 @@ from rest_framework.reverse import reverse_lazy, reverse
 class Category(MPTTModel):
     name = models.CharField(verbose_name="название", max_length=64)
     slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
-    # img = models.ImageField(blank=True, null=True)
     parent = TreeForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='sub_category',
                             db_index=True, verbose_name='Родительская категория')
+    image = models.ImageField(upload_to='img/categories', null=True, blank=True)
 
     class MPTTMeta:
         order_insertion_by = ['name']
@@ -33,12 +33,38 @@ class Category(MPTTModel):
     #         raise ValidationError({'parent': 'Достигнута максимальная вложенность!'})
 
 
+def get_sized_images(image, slug):
+    image_max = image
+    image_medium = image
+    image_min = image
+    return image_max, image_medium, image_min
+
+
+class ProductImage(models.Model):
+    image_max = models.ImageField(upload_to='max/')
+    image_medium = models.ImageField(upload_to='medium/')
+    image_min = models.ImageField(upload_to='min/')
+
+    @staticmethod
+    def upload_image(slug, image):
+        image_max, image_medium, image_min = get_sized_images(image, slug)
+
+        picture = ProductImage.objects.create(
+            image_max=image_max,
+            image_medium=image_medium,
+            image_min=image_min,
+        )
+        return picture
+
+
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
     slug = models.SlugField(max_length=150, unique=True, db_index=True, verbose_name="URL")
-    sub_category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products', verbose_name='Подкатегория')
+    sub_category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products',
+                                     verbose_name='Подкатегория')  # TODO: check ondelete
     price = models.DecimalField(verbose_name='цена продукта', max_digits=8, decimal_places=2, default=0)
-    # img = models.ImageField(blank=True, null=True)  # TODO: in 3 sizes
+    image = models.ForeignKey(ProductImage, on_delete=models.SET_NULL, blank=True, null=True,
+                              related_name='product')  # TODO: in 3 sizes
 
     def __str__(self):
         return self.name
@@ -48,16 +74,16 @@ class Product(models.Model):
         verbose_name_plural = 'Продукты'
 
     def get_adding_url(self):
-        # return f"https://{Site.objects.get_current().domain}{reverse('basket-add', args=[str(self.slug)])}"
         return reverse('basket-add', args=[str(self.slug)])
 
     def get_absolute_url(self):
         return reverse('product-detail', args=[str(self.slug)])
 
+    def set_image(self, image):
+        if self.image is not None:
+            self.image.delete()
+        self.image = ProductImage.upload_image(slug=self.slug, image=image)
 
-    # def clean(self):
-    #     if self.sub_category.parent == None:
-    #         raise ValidationError({'sub_category': 'Требуется подкатегория'})
 
 
 class Basket(models.Model):
@@ -99,5 +125,3 @@ class Basket(models.Model):
     @staticmethod
     def get_item(pk):
         return Basket.objects.get(pk=pk)
-
-
