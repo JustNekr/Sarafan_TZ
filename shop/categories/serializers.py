@@ -5,8 +5,6 @@ from .models import Product, Category, Basket
 class ProductSerializer(serializers.ModelSerializer):
     sub_category = serializers.StringRelatedField()
     category = serializers.StringRelatedField()
-    # url = serializers.URLField(source='get_absolute_url')  # , read_only=False)
-    # url = serializers.HyperlinkedIdentityField(view_name='basket-add', lookup_field='slug')
     url = serializers.SerializerMethodField()
 
     class Meta:

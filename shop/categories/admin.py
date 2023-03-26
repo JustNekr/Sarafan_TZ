@@ -9,7 +9,7 @@ class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ['name', 'slug', 'parent']
+        fields = ['name', 'slug', 'parent', 'image']
 
 
 class CategoryAdmin(DjangoMpttAdmin):
