@@ -1,8 +1,12 @@
+import os
 from functools import cached_property
+from io import StringIO, BytesIO
 
+from PIL import Image
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from rest_framework.reverse import reverse_lazy, reverse
@@ -23,8 +27,6 @@ class Category(MPTTModel):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    # def get_absolute_url(self):
-    #     return reverse('post-by-category', args=[str(self.slug)])
     def __str__(self):
         return self.name
 
@@ -33,21 +35,48 @@ class Category(MPTTModel):
     #         raise ValidationError({'parent': 'Достигнута максимальная вложенность!'})
 
 
-def get_sized_images(image, slug):
-    image_max = image
-    image_medium = image
-    image_min = image
+def get_sized_images(image, product_slug):
+    max_size = (200, 200)
+    medium_size = (100, 100)
+    min_size = (50, 50)
+    image_max = get_resized_in_memory_upload_file(file=image, size=max_size, size_name='max', product_slug=product_slug)  # .thumbnail(max_size)
+    image_medium = get_resized_in_memory_upload_file(file=image, size=medium_size, size_name='medium', product_slug=product_slug)
+    image_min = get_resized_in_memory_upload_file(file=image, size=min_size, size_name='min', product_slug=product_slug)
     return image_max, image_medium, image_min
 
 
+def get_resized_in_memory_upload_file(file, size, size_name, product_slug):
+    img = Image.open(file)
+    img.thumbnail(size)
+
+    thumb_io = BytesIO()
+    img.save(thumb_io, file.content_type.split('/')[-1].upper())
+
+    new_file_name = str(product_slug) + '_' + str(size_name) + os.path.splitext(file.name)[1]
+
+    file = InMemoryUploadedFile(file=thumb_io,
+                                field_name=u"image_{}".format(size_name),  # important to specify field name here
+                                name=new_file_name,
+                                content_type=file.content_type,
+                                size=thumb_io.getbuffer().nbytes,
+                                charset=None)
+
+    return file
+
+
+def product_image_upload_to(instance, filename):
+    product_slug, filename = '_'.join(filename.split('_')[:-1]), filename.split('_')[-1]
+    return 'img/products/{0}/{1}'.format(product_slug, filename)
+
+
 class ProductImage(models.Model):
-    image_max = models.ImageField(upload_to='max/')
-    image_medium = models.ImageField(upload_to='medium/')
-    image_min = models.ImageField(upload_to='min/')
+    image_max = models.ImageField(upload_to=product_image_upload_to)
+    image_medium = models.ImageField(upload_to=product_image_upload_to)
+    image_min = models.ImageField(upload_to=product_image_upload_to)
 
     @staticmethod
-    def upload_image(slug, image):
-        image_max, image_medium, image_min = get_sized_images(image, slug)
+    def upload_image(image, product_slug):
+        image_max, image_medium, image_min = get_sized_images(image, product_slug)
 
         picture = ProductImage.objects.create(
             image_max=image_max,
@@ -82,8 +111,7 @@ class Product(models.Model):
     def set_image(self, image):
         if self.image is not None:
             self.image.delete()
-        self.image = ProductImage.upload_image(slug=self.slug, image=image)
-
+        self.image = ProductImage.upload_image(image=image, product_slug=self.slug)
 
 
 class Basket(models.Model):

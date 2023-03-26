@@ -26,6 +26,6 @@ router.register(r'product', ProductAPIViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/categorytlist/', CategoryAPIView.as_view()),
+    path('categories/', CategoryAPIView.as_view()),
 ]
 urlpatterns += router.urls
