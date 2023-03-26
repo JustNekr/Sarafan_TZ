@@ -1,15 +1,23 @@
 from rest_framework import serializers
-from .models import Product, Category, Basket
+from .models import Product, Category, Basket, ProductImage
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        exclude = ['id']
 
 
 class ProductSerializer(serializers.ModelSerializer):
     sub_category = serializers.StringRelatedField()
     category = serializers.StringRelatedField()
     url = serializers.SerializerMethodField()
+    image = ProductImageSerializer()
 
     class Meta:
         model = Product
-        fields = ('name', 'category', 'sub_category', 'price', 'url')
+        fields = ('name', 'category', 'sub_category', 'price', 'url', 'image')
+        depth = 1
 
     def get_url(self, product):
         request = self.context.get('request')
@@ -30,14 +38,9 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug', 'sub_category', 'image')
-        # depth = 1
 
 
 class BasketSerializer(serializers.ModelSerializer):
-    # url = serializers.CharField(source='get_absolute_url', read_only=True)
-    # url = serializers.CharField(source='get_absolute_url', read_only=True)
-   # product = Hyper
-
     class Meta:
         model = Basket
         fields = ('product', 'quantity')
@@ -48,8 +51,5 @@ class BasketSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['product_cost'] = instance.product_cost
-
         return representation
-
-# class BasketListSerializer(serializers.BaseSerializer)
 

@@ -29,3 +29,4 @@ urlpatterns = [
     path('categories/', CategoryAPIView.as_view()),
 ]
 urlpatterns += router.urls
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

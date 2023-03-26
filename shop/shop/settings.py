@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django_mptt_admin',
     'categories',
     'rest_framework',
-
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
