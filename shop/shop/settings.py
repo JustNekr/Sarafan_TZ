@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'mptt',
     'django_mptt_admin',
     'categories',
+    'product',
+    'basket',
     'rest_framework',
     'django_cleanup.apps.CleanupConfig',
 ]

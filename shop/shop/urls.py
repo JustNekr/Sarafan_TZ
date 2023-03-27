@@ -18,7 +18,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from rest_framework import routers
-from categories.views import CategoryAPIView, BasketAPIViewSet, ProductAPIViewSet
+
+from basket.views import BasketAPIViewSet
+from categories.views import CategoryAPIView
+from product.views import ProductAPIViewSet
 
 router = routers.SimpleRouter()
 router.register(r'basket', BasketAPIViewSet)

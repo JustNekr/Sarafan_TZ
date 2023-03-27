@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.text import slugify
 
-from categories.models import Category, Product
+from categories.models import Category
+from product.models import Product
 
 
 class Command(BaseCommand):
