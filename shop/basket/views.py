@@ -1,6 +1,7 @@
 from django.db.models import F
 from django.http import HttpResponseRedirect
 from rest_framework import mixins
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission, IsAuthenticated

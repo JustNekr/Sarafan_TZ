@@ -18,6 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from rest_framework import routers
+from rest_framework.authtoken import views
 
 from basket.views import BasketAPIViewSet
 from categories.views import CategoryAPIView
@@ -33,3 +34,6 @@ urlpatterns = [
 ]
 urlpatterns += router.urls
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += [
+    path('api-token-auth/', views.obtain_auth_token)
+]
